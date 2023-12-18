@@ -3,7 +3,6 @@ import("core.project.config")
 import("core.project.project")
 import("core.base.json")
 
--- main entry
 function main ()
 
     -- load config
@@ -11,8 +10,10 @@ function main ()
 
     -- print targets
     local names = {}
-    for name, _ in pairs((project.targets())) do
-        table.insert(names, name)
+    for name, target in pairs((project.targets())) do
+        if target:is_binary() then
+            table.insert(names, name)
+        end
     end
     table.sort(names)
     if json.mark_as_array then

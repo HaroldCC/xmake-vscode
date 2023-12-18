@@ -37,17 +37,19 @@ interface TargetInformations {
     envs;
 }
 
-async function getTargets(): Promise<Array<string>> {
+async function getDebuggableTargets(): Promise<Array<string>> {
     let targets = "";
-    let getTargetsPathScript = path.join(__dirname, `../../assets/targets.lua`);
+    let getTargetsPathScript = path.join(__dirname, `../../assets/debuggable_targets.lua`);
     if (fs.existsSync(getTargetsPathScript)) {
         targets = (await process.iorunv(settings.executable, ["l", getTargetsPathScript], { "COLORTERM": "nocolor" }, settings.workingDirectory)).stdout.trim();
         if (targets) {
             targets = targets.split("__end__")[0].trim();
         }
     }
-
-    return targets.split('\n');
+    if (targets) {
+        return JSON.parse(targets);
+    }
+    return [];
 }
 
 /**
@@ -143,7 +145,7 @@ class XmakeConfigurationProvider implements vscode.DebugConfigurationProvider {
      * @return An array of {@link XmakeDebugConfiguration debug configurations}.
      */
     async provideDebugConfigurations(folder?: vscode.WorkspaceFolder, token?: vscode.CancellationToken): Promise<XmakeDebugConfiguration[]> {
-        const targets = await getTargets();
+        const targets = await getDebuggableTargets();
         const configs = [];
 
         // Insert all the target into the array

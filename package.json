@@ -2,7 +2,7 @@
   "name": "xmake-vscode",
   "displayName": "XMake",
   "description": "Extended XMake support in Visual Studio Code",
-  "version": "2.1.2",
+  "version": "2.2.6",
   "publisher": "tboox",
   "icon": "res/logo256.png",
   "repository": {
@@ -82,6 +82,11 @@
           "dark": "./res/logo.svg"
         },
         "configuration": "./languages/xmake-configuration.json"
+      }
+    ],
+    "breakpoints": [
+      {
+        "language": "xmake"
       }
     ],
     "grammars": [
@@ -673,7 +678,10 @@
           "description": "The compile_commands.json file directory"
         },
         "xmake.additionalConfigArguments": {
-          "type": "string[]",
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
           "default": [],
           "description": "The Additional Config Arguments, .e.g [\"--cc=gcc\", \"--myopt=xxx\"]"
         },

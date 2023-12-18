@@ -2,7 +2,37 @@
 import("core.project.config")
 import("core.project.project")
 import("core.base.json")
-import("private.action.run.make_runenvs")
+import("private.action.run.runenvs", {try = true})
+if not runenvs then
+    import("private.action.run.make_runenvs")
+end
+
+-- config target
+function _config_target(target)
+    local oldenvs = os.addenvs(target:pkgenvs())
+    for _, rule in ipairs(target:orderules()) do
+        local on_config = rule:script("config")
+        if on_config then
+            on_config(target)
+        end
+    end
+    local on_config = target:script("config")
+    if on_config then
+        on_config(target)
+    end
+    if oldenvs then
+        os.setenvs(oldenvs)
+    end
+end
+
+-- config targets
+function _config_targets()
+    for _, target in ipairs(project.ordertargets()) do
+        if target:is_enabled() then
+            _config_target(target)
+        end
+    end
+end
 
 -- recursively target add env
 function _add_target_pkgenvs(target, envs, targets_added)
@@ -30,6 +60,7 @@ function main (targetname)
     if not os.isfile(os.projectfile()) then
         return
     end
+    _config_targets()
 
     -- get target
     local target = nil
@@ -51,7 +82,7 @@ function main (targetname)
     if target then
         local oldenvs = os.getenvs()
         _add_target_pkgenvs(target, envs, {})
-        local addrunenvs, setrunenvs = make_runenvs(target)
+        local addrunenvs, setrunenvs = runenvs and runenvs.make(target) or make_runenvs(target)
         for name, values in pairs(addrunenvs) do
             os.addenv(name, table.unpack(table.wrap(values)))
             envs[name] = os.getenv(name)
